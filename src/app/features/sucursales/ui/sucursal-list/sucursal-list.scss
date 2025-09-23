@@ -1,0 +1,105 @@
+// ——— Variables rápidas
+$radius: 10px;
+$shadow: 0 2px 10px rgba(0, 0, 0, .06);
+$border: 1px solid #e9edf3;
+$bg: #fff;
+$muted: #6b7280;
+$primary: #0f766e;   // verde petróleo suave
+$danger: #b91c1c;
+
+// ——— Título
+.title {
+  margin: 8px 0 16px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+// ——— Estados (cargando, error, vacío)
+.state {
+  background: #f7fafc;
+  border: $border;
+  border-radius: $radius;
+  padding: 12px 14px;
+  color: $muted;
+  margin-bottom: 12px;
+
+  &.error {
+    background: #fff1f2;
+    color: $danger;
+    border-color: #fecdd3;
+  }
+}
+
+// ——— Contenedor scroll en móviles
+.table-wrapper {
+  background: $bg;
+  border: $border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow-x: auto;
+}
+
+// ——— Tabla
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px; // evita que se comprima demasiado
+  font-size: 14px;
+
+  thead {
+    background: #f8fafc;
+
+    th {
+      text-align: left;
+      font-weight: 600;
+      padding: 12px 14px;
+      color: #111827;
+      border-bottom: $border;
+      white-space: nowrap;
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background .15s ease;
+      &:nth-child(odd)  { background: #fbfdff; }
+      &:hover          { background: #f1f5f9; }
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: $border;
+      color: #1f2937;
+      vertical-align: middle;
+    }
+  }
+}
+
+// ——— Badges para “Activa”
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &--ok {
+    background: #ecfdf5;
+    color: $primary;
+    border: 1px solid rgba($primary, .25);
+  }
+
+  &--no {
+    background: #fef2f2;
+    color: $danger;
+    border: 1px solid rgba($danger, .25);
+  }
+}
+
+// ——— Ajustes responsivos
+@media (max-width: 640px) {
+  .title { font-size: 22px; }
+  .table { min-width: 560px; }
+}
+
