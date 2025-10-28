@@ -1,6 +1,14 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
-bootstrapApplication(App, appConfig)
-  .catch((err) => console.error(err));
+import { importProvidersFrom } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { NgxSpinnerModule } from 'ngx-spinner';
+import { routes } from './app/app.routes';
+
+bootstrapApplication(App, {
+  providers: [
+    provideRouter(routes),
+    importProvidersFrom(NgxSpinnerModule)
+  ]
+}).catch(err => console.error(err));
