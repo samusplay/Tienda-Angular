@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Sucursal } from './sucursal';
+import { Sucursal } from './sucursal.component';
 
 describe('Sucursal', () => {
   let component: Sucursal;
