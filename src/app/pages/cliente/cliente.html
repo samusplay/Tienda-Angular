@@ -1,1 +1,159 @@
-<p>cliente works!</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+      <i class="bi bi-people-fill me-2"></i>
+      Clientes
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevoCliente()">
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Nombre"
+                 [(ngModel)]="filtros.nombre" (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Apellido paterno"
+                 [(ngModel)]="filtros.apellidoPaterno" (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Apellido materno"
+                 [(ngModel)]="filtros.apellidoMaterno" (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Teléfono"
+                 [(ngModel)]="filtros.telefono" (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Correo"
+                 [(ngModel)]="filtros.correo" (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-secondary" type="button" (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+      <thead>
+        <tr>
+          <th><i class="bi bi-hash"></i> Id</th>
+          <th><i class="bi bi-person"></i> Nombre</th>
+          <th><i class="bi bi-person-vcard"></i> Apellido paterno</th>
+          <th><i class="bi bi-person-vcard"></i> Apellido materno</th>
+          <th><i class="bi bi-telephone"></i> Teléfono</th>
+          <th><i class="bi bi-envelope"></i> Correo</th>
+          <th><i class="bi bi-calendar3"></i> Fecha creación</th>
+          <th class="text-center" style="width: 130px;"><i class="bi bi-gear"></i> Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of clientesFiltrados; trackBy: trackById">
+          <td>{{ c.id }}</td>
+          <td>{{ c.nombre }}</td>
+          <td>{{ c.apellidoPaterno }}</td>
+          <td>{{ c.apellidoMaterno }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.correo }}</td>
+          <td>{{ c.createdAt }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" type="button"
+                    (click)="abrirEditarCliente(c)">
+              <i class="bi bi-pencil-square"></i>
+              Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="clientesFiltrados.length === 0">
+          <td colspan="8" class="text-center text-muted">
+            No hay clientes para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalClienteLabel">{{ titleModal }}</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" formControlName="nombre">
+              <div class="text-danger small" *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+                Nombre es obligatorio (mínimo 3 caracteres).
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Apellido paterno</label>
+              <input type="text" class="form-control" formControlName="apellidoPaterno">
+              <div class="text-danger small" *ngIf="f['apellidoPaterno'].invalid && (f['apellidoPaterno'].dirty || f['apellidoPaterno'].touched)">
+                Apellido paterno es obligatorio (mínimo 3 caracteres).
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Apellido materno</label>
+              <input type="text" class="form-control" formControlName="apellidoMaterno">
+              <div class="text-danger small" *ngIf="f['apellidoMaterno'].invalid && (f['apellidoMaterno'].dirty || f['apellidoMaterno'].touched)">
+                Si ingresas apellido materno debe tener al menos 3 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              <input type="text" class="form-control" formControlName="telefono">
+              <div class="text-danger small" *ngIf="f['telefono'].invalid && (f['telefono'].dirty || f['telefono'].touched)">
+                Teléfono es obligatorio (mínimo 7 dígitos).
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">Correo</label>
+              <input type="email" class="form-control" formControlName="correo">
+              <div class="text-danger small" *ngIf="f['correo'].invalid && (f['correo'].dirty || f['correo'].touched)">
+                Ingresa un correo válido.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+            {{ titleBoton }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
