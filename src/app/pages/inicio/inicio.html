@@ -1,4 +1,180 @@
-<div class="inicio-container">
-  <h1>Bienvenido al Panel de Administración</h1>
-  <p>Selecciona una opción del menú lateral para comenzar.</p>
+<div class="inicio-container container-fluid py-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="fw-bold mb-1">Bienvenido al Panel de Administración</h1>
+      <p class="text-muted mb-0">
+        Resumen rápido de tu tienda. Usa el menú lateral para ir a cada módulo.
+      </p>
+    </div>
+
+    <div class="text-end d-none d-md-block">
+      <div class="small text-muted">Hoy es</div>
+      <div class="fw-semibold fs-5">{{ fechaHoy | date:'fullDate' }}</div>
+    </div>
+  </div>
+
+  <!-- Indicador de carga / error -->
+  <div *ngIf="isLoading" class="text-center my-4">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMsg && !isLoading" class="alert alert-danger">
+    {{ errorMsg }}
+  </div>
+
+  <!-- Tarjetas de resumen -->
+  <div class="row g-3 mb-4" *ngIf="!isLoading">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Sucursales</span>
+            <i class="bi bi-shop fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.sucursales }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Empleados</span>
+            <i class="bi bi-people fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.empleados }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Clientes</span>
+            <i class="bi bi-person-check fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.clientes }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Productos</span>
+            <i class="bi bi-box-seam fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.productos }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Ventas registradas</span>
+            <i class="bi bi-receipt-cutoff fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.ventas }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Registros inventario</span>
+            <i class="bi bi-stack fs-4 text-primary"></i>
+          </div>
+          <div class="fs-3 fw-bold">{{ totales.inventario }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Últimas ventas -->
+  <div class="row" *ngIf="!isLoading">
+    <div class="col-12 col-xl-7 mb-4 mb-xl-0">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">
+            <i class="bi bi-clock-history me-2"></i>
+            Últimas ventas
+          </span>
+          <small class="text-muted">Las 5 más recientes</small>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="ultimasVentas.length === 0" class="p-3 text-muted">
+            Aún no hay ventas registradas.
+          </div>
+
+          <div class="table-responsive" *ngIf="ultimasVentas.length > 0">
+            <table class="table table-sm mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Sucursal</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let v of ultimasVentas; let i = index">
+                  <td>{{ v.id }}</td>
+                  <td>{{ v.fecha | date:'yyyy-MM-dd HH:mm' }}</td>
+                  <td>{{ v.sucursalNombre }}</td>
+                  <td>{{ v.clienteNombre }}</td>
+                  <td>{{ v.total | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloque de ayuda rápida -->
+    <div class="col-12 col-xl-5">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-header bg-transparent border-0">
+          <span class="fw-semibold">
+            <i class="bi bi-lightbulb me-2"></i>
+            Atajos rápidos
+          </span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            Algunas acciones que puedes realizar desde el menú:
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2">
+              <i class="bi bi-shop me-2 text-primary"></i>
+              Gestionar <strong>sucursales</strong> y su información básica.
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-people me-2 text-primary"></i>
+              Registrar nuevos <strong>empleados</strong> y asignarlos a sucursales.
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-box-seam me-2 text-primary"></i>
+              Administrar <strong>productos</strong> y su inventario.
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-receipt-cutoff me-2 text-primary"></i>
+              Registrar <strong>ventas</strong> y consultar el historial.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
