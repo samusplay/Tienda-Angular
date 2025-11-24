@@ -1,16 +1,5 @@
-// Estilos generales de la página de clientes
-.container {
-  max-width: 1200px;
-}
-
+// Título
 .clientes-title {
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-title {
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -18,7 +7,8 @@
 }
 
 // Tabla de clientes
-table.table {
+// Tabla de clientes (mismo estilo que sucursal)
+.clientes-table {
   background-color: #fff;
   border-radius: 0.75rem;
   overflow: hidden;
@@ -41,6 +31,10 @@ table.table {
       font-weight: 500;
       font-size: 0.9rem;
       white-space: nowrap;
+
+      i {
+        margin-right: 0.25rem;
+      }
     }
   }
 
@@ -50,6 +44,10 @@ table.table {
     &:hover {
       background-color: #f3f6ff;
     }
+  }
+
+  td .btn {
+    min-width: 90px;
   }
 }
 
@@ -70,12 +68,5 @@ table.table {
 
   .modal-footer {
     border-top: 1px solid #dee2e6;
-  }
-}
-
-// Botones de acciones en la tabla
-table.table td {
-  .btn {
-    min-width: 90px;
   }
 }
