@@ -1,0 +1,200 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+      <i class="bi bi-shop-window me-2"></i>
+      Sucursales
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevaSucursal()">
+      Nueva sucursal
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Id"
+                 [(ngModel)]="filtros.id"
+                 (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Nombre"
+                 [(ngModel)]="filtros.nombre"
+                 (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Dirección"
+                 [(ngModel)]="filtros.direccion"
+                 (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Ciudad"
+                 [(ngModel)]="filtros.ciudad"
+                 (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Teléfono"
+                 [(ngModel)]="filtros.telefono"
+                 (ngModelChange)="aplicarFiltros()">
+        </div>
+
+        <div class="col-md-2 mt-2 mt-md-0 d-grid">
+          <button class="btn btn-secondary" type="button" (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner de carga -->
+  <div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+      <thead>
+        <tr>
+          <th><i class="bi bi-hash"></i> Id</th>
+          <th><i class="bi bi-shop"></i> Nombre</th>
+          <th><i class="bi bi-geo-alt"></i> Dirección</th>
+          <th><i class="bi bi-building"></i> Ciudad</th>
+          <th><i class="bi bi-telephone"></i> Teléfono</th>
+          <th><i class="bi bi-toggle-on"></i> Activo</th>
+          <th class="text-center" style="width: 130px;">
+            <i class="bi bi-gear"></i> Acciones
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of clientesFiltrados; trackBy: trackById">
+          <td>{{ s.id }}</td>
+          <td>{{ s.nombre }}</td>
+          <td>{{ s.direccion }}</td>
+          <td>{{ s.ciudad }}</td>
+          <td>{{ s.telefono }}</td>
+          <td>
+            <span
+              class="badge"
+              [ngClass]="s.activo ? 'bg-success' : 'bg-secondary'">
+              {{ s.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="text-center">
+            <button
+              class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+              type="button"
+              (click)="abrirEditarSucursal(s)">
+              <i class="bi bi-pencil-square"></i>
+              Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="clientesFiltrados.length === 0">
+          <td colspan="7" class="text-center text-muted">
+            No hay sucursales para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Sucursal -->
+<div class="modal fade" id="modalSucursal" tabindex="-1" aria-labelledby="modalSucursalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSucursalLabel">{{ titleModal }}</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" formControlName="nombre">
+              <div class="text-danger small"
+                   *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+                Nombre es obligatorio y no debe superar 100 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Dirección</label>
+              <input type="text" class="form-control" formControlName="direccion">
+              <div class="text-danger small"
+                   *ngIf="f['direccion'].invalid && (f['direccion'].dirty || f['direccion'].touched)">
+                Dirección es obligatoria y no debe superar 150 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Ciudad</label>
+              <input type="text" class="form-control" formControlName="ciudad">
+              <div class="text-danger small"
+                   *ngIf="f['ciudad'].invalid && (f['ciudad'].dirty || f['ciudad'].touched)">
+                Ciudad es obligatoria y no debe superar 80 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              <input type="text" class="form-control" formControlName="telefono">
+              <div class="text-danger small"
+                   *ngIf="f['telefono'].invalid && (f['telefono'].dirty || f['telefono'].touched)">
+                Teléfono es obligatorio y no debe superar 30 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-12 d-flex align-items-center mt-2">
+              <label class="form-label me-3 mb-0">Activo</label>
+              <div class="form-check form-switch">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       formControlName="activo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="submit"
+                  class="btn btn-primary"
+                  [disabled]="form.invalid || isLoading">
+            {{ titleBoton }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+

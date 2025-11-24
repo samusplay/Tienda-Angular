@@ -3,8 +3,8 @@ import { Cliente } from '../../../pages/cliente/cliente';
 import { Empleados } from '../../../pages/empleado/empleados';
 import { Inicio } from '../../../pages/inicio/inicio';
 import { Inventario } from '../../../pages/inventario/inventario';
-import { Productos } from '../../../pages/productos/productos.component';
-import { Sucursal } from '../../../pages/sucursal/sucursal.component';
+import { Productos } from '../../../pages/productos/producto';
+import { Sucursal } from '../../../pages/sucursal/sucursal';
 import { Ventas } from '../../../pages/ventas/ventas';
 
 //Rutas Hijas

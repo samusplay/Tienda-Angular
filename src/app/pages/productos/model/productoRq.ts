@@ -1,4 +1,8 @@
 //Lo que vamos enviar
-export class ProductoRq{
-    
+export interface ProductoRq {
+  nombre: string;
+  precio: number;
+  sku: string;
+  activo: boolean;
+  sucursal: string;
 }

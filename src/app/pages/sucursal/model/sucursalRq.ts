@@ -1,10 +1,8 @@
 
-export class SucursalRs{
-  id!: number;
+export class SucursalRq{
   nombre!: string;
   direccion!: string;
   ciudad!: string;
   telefono!: string;
   activo!: boolean;
-  createdAt!: string;
 }
