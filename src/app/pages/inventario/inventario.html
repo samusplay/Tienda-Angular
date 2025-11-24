@@ -1,1 +1,206 @@
-<p>inventario works!</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+      <i class="bi bi-box-seam me-2"></i>
+      Inventario
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevoInventario()">
+      Nuevo registro
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Id"
+            [(ngModel)]="filtros.id"
+            (ngModelChange)="aplicarFiltros()"
+          />
+        </div>
+        <div class="col-md-4">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Sucursal"
+            [(ngModel)]="filtros.sucursal"
+            (ngModelChange)="aplicarFiltros()"
+          />
+        </div>
+        <div class="col-md-4">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Producto"
+            [(ngModel)]="filtros.producto"
+            (ngModelChange)="aplicarFiltros()"
+          />
+        </div>
+        <div class="col-md-2 d-grid mt-2 mt-md-0">
+          <button class="btn btn-secondary" type="button" (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+      <thead>
+        <tr>
+          <th><i class="bi bi-hash"></i> Id</th>
+          <th><i class="bi bi-shop"></i> Sucursal</th>
+          <th><i class="bi bi-box"></i> Producto</th>
+          <th><i class="bi bi-stack"></i> Stock</th>
+          <th class="text-center" style="width: 130px;">
+            <i class="bi bi-gear"></i> Acciones
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of inventariosFiltrados; trackBy: trackById">
+          <td>{{ i.idInventario }}</td>
+          <td>{{ i.sucursalNombre }}</td>
+          <td>{{ i.productNombre }}</td>
+          <td>{{ i.stock }}</td>
+          <td class="text-center">
+            <button
+              class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+              type="button"
+              (click)="abrirEditarInventario(i)"
+            >
+              <i class="bi bi-pencil-square"></i>
+              Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="inventariosFiltrados.length === 0">
+          <td colspan="5" class="text-center text-muted">
+            No hay registros de inventario para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Inventario -->
+<div
+  class="modal fade"
+  id="modalInventario"
+  tabindex="-1"
+  aria-labelledby="modalInventarioLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalInventarioLabel">{{ titleModal }}</h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="closeModal()"
+          ></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Sucursal -->
+            <div class="col-md-6">
+              <label class="form-label">Sucursal</label>
+              <select class="form-select" formControlName="idSucursal">
+                <option [ngValue]="null">-- Selecciona una sucursal --</option>
+                <option *ngFor="let s of sucursales" [ngValue]="s.id">
+                  {{ s.nombre }} - {{ s.ciudad }}
+                </option>
+              </select>
+              <div
+                class="text-danger small"
+                *ngIf="
+                  f['idSucursal'].invalid &&
+                  (f['idSucursal'].dirty || f['idSucursal'].touched)
+                "
+              >
+                Debes seleccionar una sucursal.
+              </div>
+            </div>
+
+            <!-- Producto -->
+            <div class="col-md-6">
+              <label class="form-label">Producto</label>
+              <select class="form-select" formControlName="idProducto">
+                <option [ngValue]="null">-- Selecciona un producto --</option>
+                <option *ngFor="let p of productos" [ngValue]="p.id">
+                  {{ p.nombre }} ({{ p.sku }})
+                </option>
+              </select>
+              <div
+                class="text-danger small"
+                *ngIf="
+                  f['idProducto'].invalid &&
+                  (f['idProducto'].dirty || f['idProducto'].touched)
+                "
+              >
+                Debes seleccionar un producto.
+              </div>
+            </div>
+
+            <!-- Stock -->
+            <div class="col-md-4">
+              <label class="form-label">Stock</label>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="stock"
+                min="0"
+              />
+              <div
+                class="text-danger small"
+                *ngIf="f['stock'].invalid && (f['stock'].dirty || f['stock'].touched)"
+              >
+                El stock es obligatorio y no puede ser negativo.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="closeModal()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="form.invalid || isLoading"
+          >
+            {{ titleBoton }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
