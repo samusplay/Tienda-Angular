@@ -18,35 +18,19 @@
       </h5>
       <div class="row g-2">
         <div class="col-md-2">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Id"
-            [(ngModel)]="filtros.id"
+          <input type="text" class="form-control" placeholder="Id" [(ngModel)]="filtros.id"
             (ngModelChange)="aplicarFiltros()">
         </div>
         <div class="col-md-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Nombre"
-            [(ngModel)]="filtros.nombre"
+          <input type="text" class="form-control" placeholder="Nombre" [(ngModel)]="filtros.nombre"
             (ngModelChange)="aplicarFiltros()">
         </div>
         <div class="col-md-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="SKU"
-            [(ngModel)]="filtros.sku"
+          <input type="text" class="form-control" placeholder="SKU" [(ngModel)]="filtros.sku"
             (ngModelChange)="aplicarFiltros()">
         </div>
         <div class="col-md-2">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Sucursal"
-            [(ngModel)]="filtros.sucursal"
+          <input type="text" class="form-control" placeholder="Sucursal" [(ngModel)]="filtros.sucursal"
             (ngModelChange)="aplicarFiltros()">
         </div>
         <div class="col-md-2 d-grid mt-2 mt-md-0">
@@ -88,7 +72,7 @@
           <td>{{ p.nombre }}</td>
           <td>{{ p.sku }}</td>
           <td>{{ p.precio | number:'1.2-2' }}</td>
-           <td>{{ p.sucursal || '-' }}</td>
+          <td>{{ p.sucursal || '-' }}</td>
           <td>
             <span class="badge" [ngClass]="p.activo ? 'bg-success' : 'bg-secondary'">
               {{ p.activo ? 'Activo' : 'Inactivo' }}
@@ -96,9 +80,7 @@
           </td>
           <td>{{ p.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
           <td class="text-center">
-            <button
-              class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
-              type="button"
+            <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" type="button"
               (click)="abrirEditarProducto(p)">
               <i class="bi bi-pencil-square"></i>
               Editar
@@ -130,8 +112,7 @@
             <div class="col-md-6">
               <label class="form-label">Nombre</label>
               <input type="text" class="form-control" formControlName="nombre">
-              <div class="text-danger small"
-                   *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+              <div class="text-danger small" *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
                 Nombre es obligatorio y no debe superar 150 caracteres.
               </div>
             </div>
@@ -139,8 +120,7 @@
             <div class="col-md-3">
               <label class="form-label">Precio</label>
               <input type="number" class="form-control" formControlName="precio" step="0.01" min="0">
-              <div class="text-danger small"
-                   *ngIf="f['precio'].invalid && (f['precio'].dirty || f['precio'].touched)">
+              <div class="text-danger small" *ngIf="f['precio'].invalid && (f['precio'].dirty || f['precio'].touched)">
                 Precio es obligatorio y debe ser mayor a 0.
               </div>
             </div>
@@ -148,8 +128,7 @@
             <div class="col-md-3">
               <label class="form-label">SKU</label>
               <input type="text" class="form-control" formControlName="sku">
-              <div class="text-danger small"
-                   *ngIf="f['sku'].invalid && (f['sku'].dirty || f['sku'].touched)">
+              <div class="text-danger small" *ngIf="f['sku'].invalid && (f['sku'].dirty || f['sku'].touched)">
                 SKU es obligatorio y no debe superar 50 caracteres.
               </div>
             </div>
@@ -163,7 +142,7 @@
                 </option>
               </select>
               <div class="text-danger small"
-                   *ngIf="f['sucursal'].invalid && (f['sucursal'].dirty || f['sucursal'].touched)">
+                *ngIf="f['sucursal'].invalid && (f['sucursal'].dirty || f['sucursal'].touched)">
                 Debes seleccionar una sucursal.
               </div>
             </div>
@@ -171,27 +150,17 @@
             <div class="col-md-6 d-flex align-items-center mt-2">
               <label class="form-label me-3 mb-0">Activo</label>
               <div class="form-check form-switch">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  formControlName="activo">
+                <input class="form-check-input" type="checkbox" role="switch" formControlName="activo">
               </div>
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            (click)="closeModal()">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">
             Cancelar
           </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="form.invalid || isLoading">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isLoading">
             {{ titleBoton }}
           </button>
         </div>

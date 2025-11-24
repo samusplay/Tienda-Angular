@@ -7,4 +7,5 @@ export interface ClienteRs {
   telefono: string;
   correo: string;
   createdAt: string; // LocalDateTime
+
 }

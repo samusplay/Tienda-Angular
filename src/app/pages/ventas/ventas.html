@@ -1,1 +1,175 @@
-<p>ventas works!</p>
+<div class="container mt-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+        <i class="bi bi-receipt-cutoff me-2"></i>
+        Ventas
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevaVenta()">
+        Nueva venta
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="bi bi-funnel me-2"></i>
+            Filtros
+        </h5>
+        <div class="row g-2">
+            <div class="col-md-2">
+                <input type="text" class="form-control" placeholder="Id" [(ngModel)]="filtros.id"
+                    (ngModelChange)="aplicarFiltros()" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Sucursal" [(ngModel)]="filtros.sucursal"
+                    (ngModelChange)="aplicarFiltros()" />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Cliente" [(ngModel)]="filtros.cliente"
+                    (ngModelChange)="aplicarFiltros()" />
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" placeholder="Empleado" [(ngModel)]="filtros.empleado"
+                    (ngModelChange)="aplicarFiltros()" />
+            </div>
+            <div class="col-md-2 d-grid mt-2 mt-md-0">
+                <button class="btn btn-secondary" type="button" (click)="limpiarFiltros()">
+                    Limpiar filtros
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Spinner -->
+<div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+</div>
+
+<!-- Tabla -->
+<div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+        <thead>
+            <tr>
+                <th><i class="bi bi-hash"></i> Id</th>
+                <th><i class="bi bi-calendar3"></i> Fecha</th>
+                <th><i class="bi bi-shop"></i> Sucursal</th>
+                <th><i class="bi bi-person"></i> Cliente</th>
+                <th><i class="bi bi-person-badge"></i> Empleado</th>
+                <th><i class="bi bi-cash-coin"></i> Total</th>
+                <th class="text-center" style="width: 130px;">
+                    <i class="bi bi-gear"></i> Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let v of ventasFiltradas; trackBy: trackById">
+                <td>{{ v.id }}</td>
+                <td>{{ v.fecha | date: 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ v.sucursalNombre }}</td>
+                <td>{{ v.clienteNombre }}</td>
+                <td>{{ v.empleadoNombre }}</td>
+                <td>{{ v.total | number: '1.2-2' }}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" type="button"
+                        (click)="abrirEditarVenta(v)">
+                        <i class="bi bi-pencil-square"></i>
+                        Editar
+                    </button>
+                </td>
+            </tr>
+            <tr *ngIf="ventasFiltradas.length === 0">
+                <td colspan="7" class="text-center text-muted">
+                    No hay ventas para mostrar.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<!-- Modal Venta -->
+<div class="modal fade" id="modalVenta" tabindex="-1" aria-labelledby="modalVentaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVentaLabel">{{ titleModal }}</h5>
+                    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Sucursal -->
+                        <div class="col-md-4">
+                            <label class="form-label">Sucursal</label>
+                            <select class="form-select" formControlName="idSucursal">
+                                <option [ngValue]="null">-- Selecciona una sucursal --</option>
+                                <option *ngFor="let s of sucursales" [ngValue]="s.id">
+                                    {{ s.nombre }} - {{ s.ciudad }}
+                                </option>
+                            </select>
+                            <div class="text-danger small"
+                                *ngIf="f['idSucursal'].invalid && (f['idSucursal'].dirty || f['idSucursal'].touched)">
+                                Debes seleccionar una sucursal.
+                            </div>
+                        </div>
+
+                        <!-- Cliente -->
+                        <div class="col-md-4">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-select" formControlName="idCliente">
+                                <option [ngValue]="null">-- Selecciona un cliente --</option>
+                                <option *ngFor="let c of clientes" [ngValue]="c.id">
+                                    {{ c.nombre }} {{ c.apellidoPaterno }} {{ c.apellidoMaterno }}
+                                </option>
+                            </select>
+                            <div class="text-danger small"
+                                *ngIf="f['idCliente'].invalid && (f['idCliente'].dirty || f['idCliente'].touched)">
+                                Debes seleccionar un cliente.
+                            </div>
+                        </div>
+
+                        <!-- Empleado -->
+                        <div class="col-md-4">
+                            <label class="form-label">Empleado</label>
+                            <select class="form-select" formControlName="idEmpleado">
+                                <option [ngValue]="null">-- Selecciona un empleado --</option>
+                                <option *ngFor="let e of empleados" [ngValue]="e.id">
+                                    {{ e.primerNombre }} {{ e.apellidoPaterno }} {{ e.apellidoMaterno }}
+                                </option>
+                            </select>
+                            <div class="text-danger small"
+                                *ngIf="f['idEmpleado'].invalid && (f['idEmpleado'].dirty || f['idEmpleado'].touched)">
+                                Debes seleccionar un empleado.
+                            </div>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="col-md-4">
+                            <label class="form-label">Total</label>
+                            <input type="number" class="form-control" formControlName="total" step="0.01" min="0" />
+                            <div class="text-danger small"
+                                *ngIf="f['total'].invalid && (f['total'].dirty || f['total'].touched)">
+                                El total es obligatorio y debe ser mayor a 0.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isLoading">
+                        {{ titleBoton }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
