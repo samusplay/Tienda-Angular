@@ -55,6 +55,16 @@ export class Empleados {
     sucursal: '',
     email: ''
   };
+  //cargos
+  cargos: string[] = [
+    'Gerente',
+    'Subgerente',
+    'Cajero',
+    'Auxiliar de bodega',
+    'Vendedor',
+    'Supervisor',
+    'Administrador',
+  ];
 
   // ================== FORMULARIO ==================
   form: FormGroup = new FormGroup({
@@ -187,12 +197,34 @@ export class Empleados {
       },
       error: (err) => {
         this.isLoading = false;
+
+        // Intenta obtener un mensaje útil del backend
+        const backendMessage: string =
+          err?.error?.message ||   // a veces viene aquí
+          err?.error?.error ||     // "Internal Server Error", etc.
+          err?.message ||          // fallback
+          '';
+
+        let textoError = 'No se pudo registrar el empleado';
+
+        if (backendMessage.includes('cargo indicado no es válido')) {
+          textoError = 'El cargo seleccionado no es válido. Por favor verifica.';
+        } else if (backendMessage.includes('La sucursal indicada no existe')) {
+          textoError = 'La sucursal indicada no existe. Recarga la página e inténtalo de nuevo.';
+        } else if (backendMessage.includes('Ya existe un empleado con ese correo electrónico')) {
+          textoError = 'Ya existe un empleado con ese correo electrónico.';
+        } else if (backendMessage) {
+          // Si hay cualquier otro mensaje, lo mostramos
+          textoError = backendMessage;
+        }
+
         Swal.fire({
           title: 'Error',
-          text: 'No se pudo registrar el empleado',
+          text: textoError,
           icon: 'error',
           confirmButtonText: 'Aceptar'
         });
+
         console.error('Error al crear empleado', err);
       }
     });
@@ -243,15 +275,41 @@ export class Empleados {
         this.listarEmpleados();
       },
       error: (err) => {
-        this.isLoading = false;
-        Swal.fire({
-          title: 'Error',
-          text: 'No se pudo actualizar el empleado',
-          icon: 'error',
-          confirmButtonText: 'Aceptar'
-        });
-        console.error('Error al actualizar empleado', err);
+      this.isLoading = false;
+
+      // Intentar sacar el mensaje real del backend
+      const backendMessage: string =
+        err?.error?.message ||
+        err?.error?.error ||   // a veces viene aquí
+        err?.message || '';
+
+      let textoError = 'No se pudo actualizar el empleado';
+
+      if (backendMessage.includes('cargo indicado no es válido')) {
+        textoError = 'El cargo seleccionado no es válido. Verifica la lista de cargos.';
+      } else if (backendMessage.includes('La sucursal indicada no existe')) {
+        textoError = 'La sucursal indicada no existe. Recarga las sucursales e inténtalo de nuevo.';
+      } else if (backendMessage.includes('Ese correo ya está en uso por otro empleado')
+              || backendMessage.includes('Ya existe un empleado con ese correo electrónico')) {
+        textoError = 'Ese correo ya está en uso por otro empleado.';
+      } else if (backendMessage.includes('El correo electrónico no tiene un formato válido')) {
+        textoError = 'El correo electrónico no tiene un formato válido.';
+      } else if (backendMessage.includes('El primer nombre es obligatorio')) {
+        textoError = 'El primer nombre es obligatorio.';
+      } else if (backendMessage) {
+        // fallback: lo que mande el backend
+        textoError = backendMessage;
       }
+
+      Swal.fire({
+        title: 'Error',
+        text: textoError,
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
+
+      console.error('Error al actualizar empleado', err);
+    }
     });
   }
 

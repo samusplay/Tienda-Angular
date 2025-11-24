@@ -188,12 +188,16 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Cargo</label>
-              <input type="text" class="form-control" formControlName="cargo">
-              <div class="text-danger small"
-                   *ngIf="f['cargo'].invalid && (f['cargo'].dirty || f['cargo'].touched)">
-                El cargo es obligatorio y no debe superar 60 caracteres.
-              </div>
+                <label class="form-label">Cargo</label>
+                <select class="form-select" formControlName="cargo">
+                    <option value="">-- Selecciona un cargo --</option>
+                    <option *ngFor="let c of cargos" [value]="c">
+                        {{ c }}
+                    </option>
+                </select>
+                <div class="text-danger small" *ngIf="f['cargo'].invalid && (f['cargo'].dirty || f['cargo'].touched)">
+                    Debes seleccionar un cargo.
+                </div>
             </div>
 
             <div class="col-md-6">

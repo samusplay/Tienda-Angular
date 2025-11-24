@@ -50,6 +50,8 @@ export class Cliente {
     correo:'',
     createdAt:''
   }
+  
+  
 
   //Contenedor de los campos del formulario
   form:FormGroup=new FormGroup({
