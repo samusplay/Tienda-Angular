@@ -1,1 +1,253 @@
-<p>empleados works!</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+      <i class="bi bi-people-fill me-2"></i>
+      Empleados
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevoEmpleado()">
+      Nuevo empleado
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Id"
+            [(ngModel)]="filtros.id"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Primer nombre"
+            [(ngModel)]="filtros.primerNombre"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Apellido paterno"
+            [(ngModel)]="filtros.apellidoPaterno"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Cargo"
+            [(ngModel)]="filtros.cargo"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Sucursal"
+            [(ngModel)]="filtros.sucursal"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Correo"
+            [(ngModel)]="filtros.email"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-12 col-md-2 ms-md-auto mt-2">
+          <button class="btn btn-secondary w-100" type="button" (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+      <thead>
+        <tr>
+          <th><i class="bi bi-hash"></i> Id</th>
+          <th><i class="bi bi-person"></i> Nombres</th>
+          <th><i class="bi bi-person-vcard"></i> Apellidos</th>
+          <th><i class="bi bi-briefcase"></i> Cargo</th>
+          <th><i class="bi bi-shop"></i> Sucursal</th>
+          <th><i class="bi bi-envelope"></i> Correo</th>
+          <th><i class="bi bi-toggle-on"></i> Activo</th>
+          <th><i class="bi bi-calendar3"></i> Fecha creación</th>
+          <th class="text-center" style="width: 130px;">
+            <i class="bi bi-gear"></i> Acciones
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of empleadosFiltrados; trackBy: trackById">
+          <td>{{ e.id }}</td>
+          <td>
+            {{ e.primerNombre }}
+            <span *ngIf="e.segundoNombre"> {{ e.segundoNombre }}</span>
+          </td>
+          <td>
+            {{ e.apellidoPaterno }}
+            <span *ngIf="e.apellidoMaterno"> {{ e.apellidoMaterno }}</span>
+          </td>
+          <td>{{ e.cargo }}</td>
+          <td>{{ e.sucursalNombre || '-' }}</td>
+          <td>{{ e.email }}</td>
+          <td>
+            <span class="badge" [ngClass]="e.activo ? 'bg-success' : 'bg-secondary'">
+              {{ e.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>{{ e.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+          <td class="text-center">
+            <button
+              class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+              type="button"
+              (click)="abrirEditarEmpleado(e)">
+              <i class="bi bi-pencil-square"></i>
+              Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="empleadosFiltrados.length === 0">
+          <td colspan="9" class="text-center text-muted">
+            No hay empleados para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Empleado -->
+<div class="modal fade" id="modalEmpleado" tabindex="-1" aria-labelledby="modalEmpleadoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEmpleadoLabel">{{ titleModal }}</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Primer nombre</label>
+              <input type="text" class="form-control" formControlName="primerNombre">
+              <div class="text-danger small"
+                   *ngIf="f['primerNombre'].invalid && (f['primerNombre'].dirty || f['primerNombre'].touched)">
+                El primer nombre es obligatorio y no debe superar 60 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Segundo nombre</label>
+              <input type="text" class="form-control" formControlName="segundoNombre">
+              <div class="text-danger small"
+                   *ngIf="f['segundoNombre'].invalid && (f['segundoNombre'].dirty || f['segundoNombre'].touched)">
+                El segundo nombre no debe superar 60 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Apellido paterno</label>
+              <input type="text" class="form-control" formControlName="apellidoPaterno">
+              <div class="text-danger small"
+                   *ngIf="f['apellidoPaterno'].invalid && (f['apellidoPaterno'].dirty || f['apellidoPaterno'].touched)">
+                El apellido paterno no debe superar 60 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Apellido materno</label>
+              <input type="text" class="form-control" formControlName="apellidoMaterno">
+              <div class="text-danger small"
+                   *ngIf="f['apellidoMaterno'].invalid && (f['apellidoMaterno'].dirty || f['apellidoMaterno'].touched)">
+                El apellido materno no debe superar 60 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Cargo</label>
+              <input type="text" class="form-control" formControlName="cargo">
+              <div class="text-danger small"
+                   *ngIf="f['cargo'].invalid && (f['cargo'].dirty || f['cargo'].touched)">
+                El cargo es obligatorio y no debe superar 60 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Sucursal</label>
+              <select class="form-select" formControlName="idSucursal">
+                <option [ngValue]="null">-- Selecciona una sucursal --</option>
+                <option *ngFor="let s of sucursales" [ngValue]="s.id">
+                  {{ s.nombre }} - {{ s.ciudad }}
+                </option>
+              </select>
+              <div class="text-danger small"
+                   *ngIf="f['idSucursal'].invalid && (f['idSucursal'].dirty || f['idSucursal'].touched)">
+                Debes seleccionar una sucursal.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Correo</label>
+              <input type="email" class="form-control" formControlName="email">
+              <div class="text-danger small"
+                   *ngIf="f['email'].invalid && (f['email'].dirty || f['email'].touched)">
+                Debes ingresar un correo válido.
+              </div>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center mt-2">
+              <label class="form-label me-3 mb-0">Activo</label>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  formControlName="activo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="closeModal()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="form.invalid || isLoading">
+            {{ titleBoton }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
