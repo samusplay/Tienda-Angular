@@ -15,10 +15,19 @@ export class ProductoService {
     constructor(private readonly backend:BackendService){}
 
     //lista de funcionalidaes
+     // Listar productos  -> GET /producto/listar
+    ListarProductos(): Observable<ProductoRs[]> {
+    return this.backend.get<ProductoRs[]>(`${this.endpoint}/listar`);
+  }
     
     //CrearProducto
     crearProducto(producto:ProductoRq): Observable<ProductoRs>{
       return this.backend.post<ProductoRs>(`${this.endpoint}/crear`,producto)
+    }
+    
+    // Actualizar producto -> POST /producto/actualizar/{idProducto}
+    ActualizarProducto(id: number, producto: ProductoRq): Observable<ProductoRs> {
+    return this.backend.post<ProductoRs>(`${this.endpoint}/actualizar/${id}`, producto);
     }
 
 

@@ -1,1 +1,202 @@
-<p>productos works!</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="clientes-title">
+      <i class="bi bi-basket-fill me-2"></i>
+      Productos
+    </h2>
+    <button class="btn btn-primary" type="button" (click)="abrirNuevoProducto()">
+      Nuevo producto
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="bi bi-funnel me-2"></i>
+        Filtros
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Id"
+            [(ngModel)]="filtros.id"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Nombre"
+            [(ngModel)]="filtros.nombre"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="SKU"
+            [(ngModel)]="filtros.sku"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Sucursal"
+            [(ngModel)]="filtros.sucursal"
+            (ngModelChange)="aplicarFiltros()">
+        </div>
+        <div class="col-md-2 d-grid mt-2 mt-md-0">
+          <button class="btn btn-secondary" type="button" (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div class="text-center my-3" *ngIf="isLoading">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-responsive" *ngIf="!isLoading">
+    <table class="table table-hover align-middle clientes-table">
+      <thead>
+        <tr>
+          <th><i class="bi bi-hash"></i> Id</th>
+          <th><i class="bi bi-box"></i> Nombre</th>
+          <th><i class="bi bi-upc-scan"></i> SKU</th>
+          <th><i class="bi bi-cash-coin"></i> Precio</th>
+          <th><i class="bi bi-shop"></i> Sucursal</th>
+          <th><i class="bi bi-toggle-on"></i> Activo</th>
+          <th><i class="bi bi-calendar3"></i> Fecha creación</th>
+          <th class="text-center" style="width: 130px;">
+            <i class="bi bi-gear"></i> Acciones
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of productosFiltrados; trackBy: trackById">
+          <td>{{ p.id }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.sku }}</td>
+          <td>{{ p.precio | number:'1.2-2' }}</td>
+           <td>{{ p.sucursal || '-' }}</td>
+          <td>
+            <span class="badge" [ngClass]="p.activo ? 'bg-success' : 'bg-secondary'">
+              {{ p.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>{{ p.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+          <td class="text-center">
+            <button
+              class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+              type="button"
+              (click)="abrirEditarProducto(p)">
+              <i class="bi bi-pencil-square"></i>
+              Editar
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="productosFiltrados.length === 0">
+          <td colspan="8" class="text-center text-muted">
+            No hay productos para mostrar.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Producto -->
+<div class="modal fade" id="modalProducto" tabindex="-1" aria-labelledby="modalProductoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalProductoLabel">{{ titleModal }}</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" formControlName="nombre">
+              <div class="text-danger small"
+                   *ngIf="f['nombre'].invalid && (f['nombre'].dirty || f['nombre'].touched)">
+                Nombre es obligatorio y no debe superar 150 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Precio</label>
+              <input type="number" class="form-control" formControlName="precio" step="0.01" min="0">
+              <div class="text-danger small"
+                   *ngIf="f['precio'].invalid && (f['precio'].dirty || f['precio'].touched)">
+                Precio es obligatorio y debe ser mayor a 0.
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">SKU</label>
+              <input type="text" class="form-control" formControlName="sku">
+              <div class="text-danger small"
+                   *ngIf="f['sku'].invalid && (f['sku'].dirty || f['sku'].touched)">
+                SKU es obligatorio y no debe superar 50 caracteres.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Sucursal</label>
+              <select class="form-select" formControlName="sucursal">
+                <option value="">-- Selecciona una sucursal --</option>
+                <option *ngFor="let s of sucursales" [value]="s.nombre">
+                  {{ s.nombre }} - {{ s.ciudad }}
+                </option>
+              </select>
+              <div class="text-danger small"
+                   *ngIf="f['sucursal'].invalid && (f['sucursal'].dirty || f['sucursal'].touched)">
+                Debes seleccionar una sucursal.
+              </div>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center mt-2">
+              <label class="form-label me-3 mb-0">Activo</label>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  formControlName="activo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="closeModal()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="form.invalid || isLoading">
+            {{ titleBoton }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
