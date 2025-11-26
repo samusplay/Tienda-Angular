@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   AbstractControl,
+  FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -17,6 +17,9 @@ import { VentaActualizarRq } from './model/ventaActualizarRq';
 import { VentaRs } from './model/ventaRs';
 import { VentaService } from './services/venta.service';
 
+import { DetalleVentaRq } from './model/detalleVentaRq';
+import { DetalleVentaRs } from './model/detalleVentaRs';
+
 // combos
 import { SucursalRs } from '../sucursal/model/sucursalRs';
 import { SucursalService } from '../sucursal/services/sucursal.service';
@@ -27,9 +30,12 @@ import { ClienteService } from '../cliente/services/cliente.service';
 import { EmpleadoRs } from '../empleado/model/empleadoRs';
 import { EmpleadoService } from '../empleado/services/empleado.service';
 
+import { ProductoRs } from '../productos/model/productoRs';
+import { ProductoService } from '../productos/services/producto.service';
+
 @Component({
   selector: 'app-ventas',
-  standalone:true,
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './ventas.html',
   styleUrl: './ventas.scss'
@@ -49,6 +55,9 @@ export class Ventas {
   clientes: ClienteRs[] = [];
   empleados: EmpleadoRs[] = [];
 
+  // lista de productos para el combo
+  productos: ProductoRs[] = [];
+
   // ================== ESTADO ==================
   isLoading = false;
   selectedVentaId: number | null = null;
@@ -62,18 +71,14 @@ export class Ventas {
   };
 
   // ================== FORMULARIO ==================
-  form: FormGroup = new FormGroup({
-    idSucursal: new FormControl<number | null>(null),
-    idCliente: new FormControl<number | null>(null),
-    idEmpleado: new FormControl<number | null>(null),
-    total: new FormControl<number | null>(null)
-  });
+  form: FormGroup = new FormGroup({});
 
   constructor(
     private readonly ventaService: VentaService,
     private readonly sucursalService: SucursalService,
     private readonly clienteService: ClienteService,
     private readonly empleadoService: EmpleadoService,
+    private readonly productoService: ProductoService,
     private readonly formBuilder: FormBuilder
   ) {
     this.inicializarFormulario();
@@ -81,30 +86,73 @@ export class Ventas {
     this.cargarSucursales();
     this.cargarClientes();
     this.cargarEmpleados();
+    this.cargarProductos();
   }
 
-  // ================== FORM ==================
+  // ================== GETTERS ==================
+
+  get f(): { [key: string]: AbstractControl } {
+    return this.form.controls;
+  }
+
+  get items(): FormArray {
+    return this.form.get('items') as FormArray;
+  }
+
+  // Total calculado en base a los items (para mostrar en el HTML)
+  get totalCalculado(): number {
+    return this.items.controls.reduce((acc, ctrl) => {
+      const cantidad = Number(ctrl.get('cantidad')?.value ?? 0);
+      const precio = Number(ctrl.get('precioUnit')?.value ?? 0);
+      return acc + cantidad * precio;
+    }, 0);
+  }
+
+  // ================== FORM / DETALLE ==================
 
   private inicializarFormulario(): void {
     this.form = this.formBuilder.group({
       idSucursal: [null, [Validators.required]],
       idCliente: [null, [Validators.required]],
       idEmpleado: [null, [Validators.required]],
-      total: [0, [Validators.required, Validators.min(0.01)]]
+      items: this.formBuilder.array([], [Validators.required])
+    });
+
+    // al menos una línea de detalle
+    this.agregarItem();
+  }
+
+  private crearItemDetalle(init?: Partial<DetalleVentaRq>): FormGroup {
+    return this.formBuilder.group({
+      idProducto: [init?.idProducto ?? null, [Validators.required]],
+      cantidad: [init?.cantidad ?? 1, [Validators.required, Validators.min(1)]],
+      precioUnit: [init?.precioUnit ?? 0, [Validators.required, Validators.min(0.01)]]
     });
   }
 
-  get f(): { [key: string]: AbstractControl } {
-    return this.form.controls;
+  agregarItem(): void {
+    this.items.push(this.crearItemDetalle());
+  }
+
+  eliminarItem(index: number): void {
+    if (this.items.length > 1) {
+      this.items.removeAt(index);
+    }
   }
 
   limpiarFormulario(): void {
     this.form.reset({
       idSucursal: null,
       idCliente: null,
-      idEmpleado: null,
-      total: 0
+      idEmpleado: null
     });
+
+    // limpiar ítems
+    while (this.items.length > 0) {
+      this.items.removeAt(0);
+    }
+    this.agregarItem();
+
     this.form.markAsPristine();
     this.form.markAsUntouched();
   }
@@ -144,6 +192,17 @@ export class Ventas {
     });
   }
 
+  private cargarProductos(): void {
+    this.productoService.ListarProductos().subscribe({
+      next: (data: ProductoRs[]) => {
+        this.productos = data;
+      },
+      error: err => {
+        console.error('Error al cargar productos', err);
+      }
+    });
+  }
+
   // ================== LISTAR VENTAS ==================
 
   listarVentas(): void {
@@ -179,12 +238,19 @@ export class Ventas {
 
     this.isLoading = true;
 
-    const formValue = this.form.value;
+    const formValue = this.form.getRawValue();
+
+    const items: DetalleVentaRq[] = (formValue.items ?? []).map((it: any) => ({
+      idProducto: it.idProducto,
+      cantidad: it.cantidad,
+      precioUnit: it.precioUnit
+    }));
+
     const body: VentaRq = new VentaRq({
       idSucursal: formValue.idSucursal!,
       idCliente: formValue.idCliente!,
       idEmpleado: formValue.idEmpleado!,
-      total: formValue.total!
+      items
     });
 
     this.ventaService.CrearVenta(body).subscribe({
@@ -237,12 +303,19 @@ export class Ventas {
 
     this.isLoading = true;
 
-    const formValue = this.form.value;
+    const formValue = this.form.getRawValue();
+
+    const items: DetalleVentaRq[] = (formValue.items ?? []).map((it: any) => ({
+      idProducto: it.idProducto,
+      cantidad: it.cantidad,
+      precioUnit: it.precioUnit
+    }));
+
     const body: VentaActualizarRq = new VentaActualizarRq({
       idSucursal: formValue.idSucursal!,
       idCliente: formValue.idCliente!,
       idEmpleado: formValue.idEmpleado!,
-      total: formValue.total!
+      items
     });
 
     this.ventaService.ActualizarVenta(this.selectedVentaId, body).subscribe({
@@ -283,42 +356,65 @@ export class Ventas {
   }
 
   abrirEditarVenta(venta: VentaRs): void {
-  this.limpiarFormulario();
-  this.modoFormulario = 'E';
-  this.selectedVentaId = venta.id;
+    this.limpiarFormulario();
+    this.modoFormulario = 'E';
+    this.selectedVentaId = venta.id;
 
-  // buscar sucursal por nombre
-  const sucursal = this.sucursales.find(
-    s => s.nombre.toLowerCase() === venta.sucursalNombre.toLowerCase()
-  );
+    // --- cabecera ---
+    const sucursal = this.sucursales.find(
+      s => s.nombre.toLowerCase() === venta.sucursalNombre.toLowerCase()
+    );
 
-  // buscar cliente por nombre completo
-  const cliente = this.clientes.find(c => {
-    const nombreCompletoCliente = `${c.nombre} ${c.apellidoPaterno ?? ''} ${c.apellidoMaterno ?? ''}`
-      .trim()
-      .toLowerCase();
+    const cliente = this.clientes.find(c => {
+      const nombreCompletoCliente = `${c.nombre} ${c.apellidoPaterno ?? ''} ${c.apellidoMaterno ?? ''}`
+        .trim()
+        .toLowerCase();
+      return nombreCompletoCliente === venta.clienteNombre.toLowerCase();
+    });
 
-    return nombreCompletoCliente === venta.clienteNombre.toLowerCase();
-  });
+    const empleado = this.empleados.find(e => {
+      const nombreCompletoEmpleado = `${e.primerNombre} ${e.apellidoPaterno ?? ''} ${e.apellidoMaterno ?? ''}`
+        .trim()
+        .toLowerCase();
+      return nombreCompletoEmpleado === venta.empleadoNombre.toLowerCase();
+    });
 
-  // buscar empleado por nombre completo
-  const empleado = this.empleados.find(e => {
-    const nombreCompletoEmpleado = `${e.primerNombre} ${e.apellidoPaterno ?? ''} ${e.apellidoMaterno ?? ''}`
-      .trim()
-      .toLowerCase();
+    this.form.patchValue({
+      idSucursal: sucursal?.id ?? null,
+      idCliente: cliente?.id ?? null,
+      idEmpleado: empleado?.id ?? null
+    });
 
-    return nombreCompletoEmpleado === venta.empleadoNombre.toLowerCase();
-  });
+    // --- detalles: llamamos al backend para traer los productos de la venta ---
+    this.ventaService.ListarDetallePorVenta(venta.id).subscribe({
+      next: (detalles: DetalleVentaRs[]) => {
+        while (this.items.length > 0) {
+          this.items.removeAt(0);
+        }
 
-  this.form.patchValue({
-    idSucursal: sucursal?.id ?? null,
-    idCliente: cliente?.id ?? null,
-    idEmpleado: empleado?.id ?? null,
-    total: venta.total
-  });
+        if (detalles.length === 0) {
+          this.agregarItem();
+        } else {
+          detalles.forEach(d => {
+            const detalleInit: DetalleVentaRq = {
+              idProducto: d.idProducto,
+              cantidad: d.cantidad,
+              precioUnit: d.precioUnit
+            };
+            this.items.push(this.crearItemDetalle(detalleInit));
+          });
+        }
 
-  this.openModal('E');
-}
+        this.openModal('E');
+      },
+      error: err => {
+        console.error('Error al cargar detalles de la venta', err);
+        // al menos una línea vacía para que el usuario pueda corregir
+        this.agregarItem();
+        this.openModal('E');
+      }
+    });
+  }
 
   openModal(modo: 'C' | 'E'): void {
     this.modoFormulario = modo;
@@ -386,5 +482,4 @@ export class Ventas {
       this.actualizarVenta();
     }
   }
-
 }

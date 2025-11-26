@@ -5,6 +5,7 @@ export class VentaRs {
   sucursalNombre: string;
   clienteNombre: string;
   empleadoNombre: string;
+  productoNombre: string; 
   total: number;
 
   constructor(init?: Partial<VentaRs>) {
@@ -13,6 +14,7 @@ export class VentaRs {
     this.sucursalNombre = '';
     this.clienteNombre = '';
     this.empleadoNombre = '';
+    this.productoNombre = ''; 
     this.total = 0;
 
     Object.assign(this, init);
